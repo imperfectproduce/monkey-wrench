@@ -4,7 +4,6 @@ import setMomentTime from './setMomentTime';
  * dateAsMoment is a moment object
  * day is 0-6
  * time is optional and formatted as HH:MM:SS - ex 15:30:10 for 3:30 and 10 seconds
- * weekBoundaryMoment is optional and will default to dateAsMoment
  */
 const getNextDate = (dateAsMoment, day, time) => {
 

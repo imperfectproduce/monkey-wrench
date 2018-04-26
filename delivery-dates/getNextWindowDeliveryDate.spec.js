@@ -2,6 +2,7 @@ import getNextWindowDeliveryDate from './getNextWindowDeliveryDate';
 import assert from 'assert';
 import moment from 'moment';
 
+// https://deliveries-dev.imperfectfoods.co/windows
 const windowData = {
   windowMondayPM: {
     startDay: 1,
