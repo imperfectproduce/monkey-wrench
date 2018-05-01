@@ -24,6 +24,8 @@
   "dependencies": {
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
+    "moment": "^2.22.1",
+    "moment-timezone": "^0.5.16",
     "react": "16.2.0",
     "react-redux": "^5.0.7",
     "redux": "^3.7.2"
