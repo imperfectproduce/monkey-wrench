@@ -12,3 +12,4 @@ export default function ({ prefixes = {}, suffixes = [SUCCEEDED_SUFFIX, FAILED_S
     return blob;
     /* eslint-enable */
   }, {});
+}
