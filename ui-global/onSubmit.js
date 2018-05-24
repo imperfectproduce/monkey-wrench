@@ -2,12 +2,11 @@ export default (values, actions, config = {}) => {
   const {
     resetUponSuccess,
     onSuccess,
-    onFailure,
-    ...restConfig
+    onFailure
   } = config;
   return {
     formikConfig: {
-      ...restConfig,
+      ...config,
       onSuccess: (successMessage) => {
         actions.setSubmitting(false);
         if (resetUponSuccess) actions.resetForm(values);
