@@ -10,7 +10,7 @@ export const getNutritionLabelConfig = nutrition => {
     // allowFDARounding: ,
     // showServingsPerContainer: false,
     showServingUnitQuantity: !_isNil(nutrition.serving_qty),
-    showServingUnitQuantityTextbox: false,
+    showServingUnitQuantityTextbox: true,
     // showBrandName: false,
     showCalories: !_isNil(nutrition.nf_calories),
     showFatCalories: !_isNil(nutrition.nf_calories),
