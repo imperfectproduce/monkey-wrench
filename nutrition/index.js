@@ -64,6 +64,6 @@ export const getNutritionLabelConfig = nutrition => {
     ingredientList: nutrition.nf_ingredient_statement,
 
     showDisclaimer: true,
-    valueDisclaimer: '<br /><span style="margin-left: -4px">**</span> We try our best to keep product information as accurate as possible but nutrition values and ingredient lists may not exactly match label on product packaging.  Imperfect assumes no liability for inaccuracies or misstatements about products. Information and statements regarding products have not been evaluated by the Food and Drug Administration.'
+    valueDisclaimer: '<br />(Note: This Product Description Is Informational Only. Always Check The Actual Product Label In Your Possession For The Most Accurate Ingredient Information Before Use. For Any Health Or Dietary Related Matter Always Consult Your Doctor Before Use.)'
   }
 }
