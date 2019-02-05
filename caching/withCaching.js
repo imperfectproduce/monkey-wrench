@@ -71,7 +71,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 };
 
 // adds a closure around the cache and logger dependencies
-export const buildCacheWrapper = ({ cache, logger }) => {
+const buildCacheWrapper = ({ cache, logger }) => {
   if (!cache || !cache.get || !cache.set) {
     throw new Error('Must provide a cache interface with get, and set');
   }
@@ -81,3 +81,5 @@ export const buildCacheWrapper = ({ cache, logger }) => {
 
   return (fn, params = {}) => cacheWrapper(fn, cache, logger, params);
 };
+
+module.exports = buildCacheWrapper;
