@@ -24,7 +24,7 @@ const subscribeToConnectionEvents = (client, callback) => {
           }
         };
 
-        if (data) event.event.data;
+        if (data) event.event.data = data;
 
         callback(event);
       });
