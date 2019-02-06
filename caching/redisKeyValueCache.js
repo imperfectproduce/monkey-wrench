@@ -1,46 +1,69 @@
-import redis from 'redis';
-import Promise from 'bluebird';
-import * as logger from './lib/logger';
+const redis = require('redis');
+const Promise = require('bluebird');
 Promise.promisifyAll(redis);
 
-// redis looks to hang when it gets disconnected
-const GET_TIMEOUT_MS = process.env.GET_TIMEOUT_MS || 500; // half a second by default
-
-// only create client if env vars are there? (don't want to fallback on default)
-const client = redis.createClient({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT
-});
-
-const logRedisEvent = (level, message, data) => {
-  const content = { message };
-  if (data) content.data = data;
-
-  return logger[level](content, ['redis-event']);
+// http://redis.js.org/#api-connection-and-other-events
+const REDIS_CONNECTION_EVENTS = {
+  ready: 'info',
+  connect: 'info',
+  reconnecting: 'info',
+  error: 'error',
+  warning: 'warning',
+  end: 'info'
 };
 
-const logRedisInfoEvent = (message, data) => logRedisEvent('info', message, data);
-const logRedisErrorEvent = (message, data) => logRedisEvent('error', message, data);
-const logRedisWarningEvent = (message, data) => logRedisEvent('warn', message, data);
+// callback gets invoked with ({ level, event })
+const subscribeToConnectionEvents = (client, callback) => {
+  Object.keys(REDIS_CONNECTION_EVENTS)
+    .forEach((connectionEvent) => {
+      client.on(connectionEvent, (data) => {
+        const event = {
+          level: REDIS_CONNECTION_EVENTS[connectionEvent],
+          event: {
+            connectionEvent
+          }
+        };
 
-client.on('ready', () => logRedisInfoEvent('Redis ready'));
-client.on('connect', () => logRedisInfoEvent('Redis connected'));
-client.on('reconnecting', (data) => logRedisInfoEvent('Redis reconnecting', data));
-client.on('error', (err) => logRedisErrorEvent('Redis error', err));
-client.on('warning', (warning) => logRedisWarningEvent('Redis error', warning));
-client.on('end', () => logRedisInfoEvent('Redis end'));
+        if (data) event.event.data;
 
-export const get = (key) => {
-  return client.getAsync(key)
-    .timeout(GET_TIMEOUT_MS)
-    .then(result => JSON.parse(result)); // deserialize
+        callback(event);
+      });
+    });
 };
 
-export const set = (key, value, expirationSeconds = 60) => {
-  const serializedValue = JSON.stringify(value);
-  return client.setAsync(key, serializedValue, 'EX', expirationSeconds);
-};
+function RedisKeyValueCache(options = {}) {
+  const {
+    host, // required
+    port, // required
+    // optionally function subscriber to redis connection events: ({ level, event }) => {}
+    onConnectionEvent = null,
+    // don't get stuck not being able to access the cache
+    // getAsync throws a bluebird Promise.TimeoutError error after specified milliseconds
+    getTimeoutMs = 500
+  } = options;
 
-export const deleteKey = (key) => {
-  return client.delAsync(key);
-};
+  if (!host) throw new Error('Missing redis host');
+  if (!port) throw new Error('Missing redis port');
+
+  const client = redis.createClient({ host, port });
+  if (onConnectionEvent) {
+    subscribeToConnectionEvents(client, onConnectionEvent);
+  }
+
+  this.get = (key) => {
+    return client.getAsync(key)
+      .timeout(getTimeoutMs)
+      .then(result => JSON.parse(result)); // deserialize
+  };
+
+  this.set = (key, value, expirationSeconds = 60) => {
+    const serializedValue = JSON.stringify(value);
+    return client.setAsync(key, serializedValue, 'EX', expirationSeconds);
+  };
+
+  this.deleteKey = (key) => {
+    return client.delAsync(key);
+  };
+}
+
+module.exports = RedisKeyValueCache;
