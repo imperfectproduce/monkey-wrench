@@ -1,13 +1,19 @@
 import _isNil from 'lodash/isNil';
 
 export const getNutritionLabelConfig = nutrition => {
+  const showLegacyVersion = nutrition.nutritionLabelUI !== '2018';
+
+  const valueCalcium = showLegacyVersion ? nutrition.nf_calcium : nutrition.nf_calcium_dv;
+  const valueIron = showLegacyVersion ? nutrition.nf_iron : nutrition.nf_iron_dv;
+  const valueVitaminD = showLegacyVersion ? nutrition.nf_vitamin_d : nutrition.nf_vitamin_d_dv;
+
   return {
+    showLegacyVersion,
     allowCustomWidth: false,
     allowNoBorder: false,
-    showLegacyVersion: false,
     showItemName: false,
     // showAmountPerServing: !_isNil(nutrition.showAmountPerServing),
-    // allowFDARounding: ,
+    // allowFDARounding: true,
     // showServingsPerContainer: false,
     showServingUnitQuantity: !_isNil(nutrition.serving_qty),
     showServingUnitQuantityTextbox: true,
@@ -25,14 +31,14 @@ export const getNutritionLabelConfig = nutrition => {
     showFibers: !_isNil(nutrition.nf_dietary_fiber),
     showSugars: !_isNil(nutrition.nf_sugars),
     showProteins: !_isNil(nutrition.nf_protein),
-    showVitaminA: !_isNil(nutrition.nf_vitamin_a_dv),
-    showVitaminC: !_isNil(nutrition.nf_vitamin_c_dv),
-    showCalcium: !_isNil(nutrition.nf_calcium_dv),
-    showIron: !_isNil(nutrition.nf_iron_dv),
-    showPotassium: !_isNil(nutrition.nf_potassium),
-    showPotassium_2018: !_isNil(nutrition.nf_potassium_dv),
+    showVitaminA: !_isNil(nutrition.nf_vitamin_a),
+    showVitaminC: !_isNil(nutrition.nf_vitamin_c),
+    showCalcium: !_isNil(valueCalcium),
+    showIron: !_isNil(valueIron),
+    showPotassium: showLegacyVersion && !_isNil(nutrition.nf_potassium),
+    showPotassium_2018: !showLegacyVersion && !_isNil(nutrition.nf_potassium_dv),
     showAddedSugars: !_isNil(nutrition.nf_added_sugars),
-    showVitaminD: !_isNil(nutrition.nf_vitamin_d_dv),
+    showVitaminD: !_isNil(valueVitaminD),
 
     valueServingUnitQuantity: nutrition.serving_qty,
     valueServingSizeUnit: nutrition.serving_unit,
@@ -50,11 +56,11 @@ export const getNutritionLabelConfig = nutrition => {
     valueFibers: nutrition.nf_dietary_fiber,
     valueSugars: nutrition.nf_sugars,
     valueProteins: nutrition.nf_protein,
-    valueVitaminA: nutrition.nf_vitamin_a_dv,
-    valueVitaminC: nutrition.nf_vitamin_c_dv,
-    valueVitaminD: nutrition.nf_vitamin_d_dv,
-    valueCalcium: nutrition.nf_calcium_dv,
-    valueIron: nutrition.nf_iron_dv,
+    valueVitaminA: nutrition.nf_vitamin_a,
+    valueVitaminC: nutrition.nf_vitamin_c,
+    valueVitaminD: valueVitaminD,
+    valueCalcium: valueCalcium,
+    valueIron: valueIron,
     valuePotassium: nutrition.nf_potassium,
     valuePotassium_2018: nutrition.nf_potassium_dv,
     valueAddedSugars: nutrition.nf_added_sugars,
