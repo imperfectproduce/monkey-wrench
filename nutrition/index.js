@@ -3,8 +3,8 @@ import _isNil from 'lodash/isNil';
 export const getNutritionLabelConfig = nutrition => {
   const showLegacyVersion = nutrition.nutritionLabelUI !== '2018';
 
-  const valueCalcium = showLegacyVersion ? nutrition.nf_calcium : nutrition.nf_calcium_dv;
-  const valueIron = showLegacyVersion ? nutrition.nf_iron : nutrition.nf_iron_dv;
+  const showVitaminA = !_isNil(nutrition.nf_vitamin_a_dv) || !_isNil(nutrition.nf_vitamin_a_iu_dv);
+  const valueVitaminA = nutrition.nf_vitamin_a_dv ? nutrition.nf_vitamin_a_dv : nutrition.nf_vitamin_a_iu_dv;
   const valueVitaminD = showLegacyVersion ? nutrition.nf_vitamin_d : nutrition.nf_vitamin_d_dv;
 
   return {
@@ -33,8 +33,8 @@ export const getNutritionLabelConfig = nutrition => {
     showProteins: !_isNil(nutrition.nf_protein),
     showVitaminA: !_isNil(nutrition.nf_vitamin_a),
     showVitaminC: !_isNil(nutrition.nf_vitamin_c),
-    showCalcium: !_isNil(valueCalcium),
-    showIron: !_isNil(valueIron),
+    showCalcium: !_isNil(nutrition.nf_calcium_dv),
+    showIron: !_isNil(nutrition.nf_iron_dv),
     showPotassium: showLegacyVersion && !_isNil(nutrition.nf_potassium),
     showPotassium_2018: !showLegacyVersion && !_isNil(nutrition.nf_potassium_dv),
     showAddedSugars: !_isNil(nutrition.nf_added_sugars),
@@ -56,11 +56,11 @@ export const getNutritionLabelConfig = nutrition => {
     valueFibers: nutrition.nf_dietary_fiber,
     valueSugars: nutrition.nf_sugars,
     valueProteins: nutrition.nf_protein,
-    valueVitaminA: nutrition.nf_vitamin_a,
+    valueVitaminA: valueVitaminA,
     valueVitaminC: nutrition.nf_vitamin_c,
     valueVitaminD: valueVitaminD,
-    valueCalcium: valueCalcium,
-    valueIron: valueIron,
+    valueCalcium: nutrition.nf_calcium_dv,
+    valueIron: nutrition.nf_iron_dv,
     valuePotassium: nutrition.nf_potassium,
     valuePotassium_2018: nutrition.nf_potassium_dv,
     valueAddedSugars: nutrition.nf_added_sugars,
