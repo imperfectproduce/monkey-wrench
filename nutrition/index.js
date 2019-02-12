@@ -31,7 +31,7 @@ export const getNutritionLabelConfig = nutrition => {
     showFibers: !_isNil(nutrition.nf_dietary_fiber),
     showSugars: !_isNil(nutrition.nf_sugars),
     showProteins: !_isNil(nutrition.nf_protein),
-    showVitaminA: !_isNil(nutrition.nf_vitamin_a),
+    showVitaminA: showVitaminA,
     showVitaminC: !_isNil(nutrition.nf_vitamin_c),
     showCalcium: !_isNil(nutrition.nf_calcium_dv),
     showIron: !_isNil(nutrition.nf_iron_dv),
