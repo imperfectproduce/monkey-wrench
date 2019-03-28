@@ -62,6 +62,17 @@ function Client(appId, key) {
     const index = client.initIndex(indexName);
     return index.deleteObject(objectIDs);
   };
+
+  /**
+   * Search
+   * @param {string} indexName The name of the index.
+   * @param {string} query Search query text.
+   * @param {object} options Algolia options
+   */
+  this.search = (indexName, query, options = {}) => {
+    const index = client.initIndex(indexName);
+    return index.search(query, options);
+  };
 }
 
 module.exports = Client;
