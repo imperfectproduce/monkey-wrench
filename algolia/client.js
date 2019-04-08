@@ -60,7 +60,7 @@ function Client(appId, key) {
    */
   this.deleteRecord = (indexName, objectID) => {
     const index = client.initIndex(indexName);
-    return index.deleteObject(objectIDs);
+    return index.deleteObject(objectID);
   };
 
   /**
