@@ -1,6 +1,6 @@
 {
   "name": "@imperfectproduce/monkey-wrench",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A collection of shared JavaScript for our node microservices, admin tooling, and the website.",
   "main": "index.js",
   "babel": {
@@ -25,8 +25,8 @@
     "algoliasearch": "^3.32.1",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
-    "isomorphic-fetch": "^2.2.1",
     "bluebird": "^3.5.3",
+    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.11",
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
