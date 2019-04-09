@@ -1,4 +1,3 @@
-const Promise = require('bluebird');
 const algoliasearch = require('algoliasearch');
 
 function Client(appId, key) {
