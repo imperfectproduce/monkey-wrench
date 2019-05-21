@@ -1,5 +1,4 @@
-
-import { SplitFactory } from '@splitsoftware/splitio';
+const { SplitFactory } = require('@splitsoftware/splitio');
 
 // eslint-disable-next-line new-cap
 const factory = SplitFactory({
@@ -10,6 +9,10 @@ const factory = SplitFactory({
 
 const client = factory.client();
 
-export const getTreatment = (identifier, experiment, params) => {
+const getTreatment = (identifier, experiment, params) => {
   return client.getTreatment(identifier, experiment, params);
+};
+
+module.exports = {
+  getTreatment
 };
