@@ -9,7 +9,7 @@ const factory = SplitFactory({
 
 const client = factory.client();
 
-const getTreatment = (identifier, experiment, params) => {
+const getTreatment = (experiment, identifier, params) => {
   return client.getTreatment(identifier, experiment, params);
 };
 
