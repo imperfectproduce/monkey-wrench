@@ -11,7 +11,7 @@ const connected = (mapStateToProps, actions) => Component => {
         }
       };
     }
-    return null;
+    return {};
   };
 
   return connect(
