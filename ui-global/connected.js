@@ -1,21 +1,17 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-/*
- * Simplifies the connect & bindActionCreators for react components.
- */
-export default (mapStateToProps, actions) => Component => {
+const connected = (mapStateToProps, actions) => Component => {
   const mapDispatchToProps = (dispatch, ownProps) => {
     if (actions) {
       return {
-        ...ownProps,
         actions: {
           ...ownProps.actions,
           ...bindActionCreators(actions, dispatch)
         }
       };
     }
-    return ownProps;
+    return null;
   };
 
   return connect(
@@ -23,3 +19,5 @@ export default (mapStateToProps, actions) => Component => {
     mapDispatchToProps
   )(Component);
 };
+
+export default connected;
