@@ -23,5 +23,3 @@ export default (mapStateToProps, actions) => Component => {
     mapDispatchToProps
   )(Component);
 };
-
-export default connected;
