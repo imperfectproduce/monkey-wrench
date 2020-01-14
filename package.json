@@ -27,7 +27,7 @@
     "babel-register": "^6.26.0",
     "bluebird": "^3.5.3",
     "isomorphic-fetch": "^2.2.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
     "react": "16.2.0",
@@ -35,6 +35,7 @@
     "redux": "^3.7.2"
   },
   "devDependencies": {
+    "expect": "^24.9.0",
     "mocha": "^5.0.5"
   }
 }
