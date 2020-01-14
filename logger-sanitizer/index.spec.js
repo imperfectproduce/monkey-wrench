@@ -1,6 +1,6 @@
 /* eslint-env mocha */
-import expect from 'expect';
-import loggerSanitizer from './loggerSanitizer';
+const expect = require('expect');
+const { loggerSanitizer } = require('./index');
 
 describe('Logger messages sanitizer redacts blacklisted passwords, tokens and keys', () => {
   it('Should redact values for all blacklisted (sensitive) keys from log message', () => {
