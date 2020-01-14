@@ -1,4 +1,3 @@
-import uniq from 'lodash/uniq';
 import _isArray from 'lodash/isArray';
 import _isPlainObject from 'lodash/isPlainObject';
 
