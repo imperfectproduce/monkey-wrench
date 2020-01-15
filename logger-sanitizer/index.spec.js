@@ -9,15 +9,17 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       password: '12345',
       data: {
         pass: '12345',
+        cc: '2345-4242-4242-4242'
       },
-      key: '234567',
+      card: '2345-4242-4242-4242',
       token: '345678',
       happyKey: 'I am a happy key'
     };
     const data = loggerSanitizer(testLog);
     expect(data.password).toEqual('[redacted]');
     expect(data.data.pass).toEqual('[redacted]');
-    expect(data.key).toEqual('[redacted]');
+    expect(data.data.cc).toEqual('[redacted]');
+    expect(data.card).toEqual('[redacted]');
     expect(data.token).toEqual('[redacted]');
   });
   it('Should not redact values for keys not on blacklisted list', () => {
