@@ -12,8 +12,18 @@ const loggerSanitizer = (data) => {
     return data.map(item => loggerSanitizer(item, blacklistedLogKeys));
   }
 
-  // handle non-objects
-  if (!_isPlainObject(data)) return data;
+  // if non-object, redact if contains any blacklisted keys
+  if (!_isPlainObject(data)) {
+    try {
+      blacklistedLogKeys.forEach((key) => {
+        if (data.toLowerCase().includes(key)) data = '[redacted]';
+      });
+      return data; 
+    } catch(err) {
+      // some other type - lets redact to be on safe side
+      return '[redacted]';
+    }
+  }
 
   // handle objects
   return Object.keys(data).reduce((acc, key) => {

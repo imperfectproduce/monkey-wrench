@@ -33,7 +33,12 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
     expect(data.user).toEqual('tester');
     expect(data.happyKey).toEqual('I am a happy key');
   });
-  it('Should not redact a string', () => {
+  it('Should redact a string if it contains a blacklisted key', () => {
+    const testLog = 'You will never guess my password! It\'s 1234';
+    const data = loggerSanitizer(testLog);
+    expect(data).toEqual('[redacted]');
+  });
+  it('Should return the string if it doesn\'t contain a blacklisted key', () => {
     const testLog = 'happyString';
     const data = loggerSanitizer(testLog);
     expect(data).toEqual('happyString');
