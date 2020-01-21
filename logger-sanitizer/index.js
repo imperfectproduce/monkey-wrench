@@ -7,22 +7,22 @@ const loggerSanitizer = (data) => {
   // define list of keys to sanitize
   const blacklistedLogKeys = ['pass', 'password', 'pw', 'token', 'credit', 'card', 'cc'];
 
+  // handle null/undefined/bool/num
+  if (data === null || typeof data==='undefined' || typeof data==='boolean' || typeof data==='number') return data;
+
   // handle arrays
   if (_isArray(data)) {
     return data.map(item => loggerSanitizer(item, blacklistedLogKeys));
   }
 
   // if non-object, redact if contains any blacklisted keys
-  if (!_isPlainObject(data)) {
-    try {
-      blacklistedLogKeys.forEach((key) => {
-        if (data.toLowerCase().includes(key)) data = '[redacted]';
-      });
-      return data; 
-    } catch(err) {
-      // some other type - lets redact to be on safe side
-      return '[redacted]';
-    }
+  if (typeof(data)==='string') {
+    blacklistedLogKeys.forEach((key) => {
+      if (data.toLowerCase().includes(key)) {
+        data = '[redacted]';
+      }
+    });
+    return data;
   }
 
   // handle objects
@@ -31,11 +31,7 @@ const loggerSanitizer = (data) => {
     if (blacklistedLogKeys.includes(key.toLowerCase())) {
       acc[key] = '[redacted]';
     } else {
-      if (typeof data[key] === 'object' && data[key] !== null) {
-        acc[key] = loggerSanitizer(data[key], blacklistedLogKeys);
-      } else {
-        acc[key] = data[key];
-      }
+      acc[key] = loggerSanitizer(data[key], blacklistedLogKeys);
     }
     /* eslint-enable no-param-reassign */
     return acc;
