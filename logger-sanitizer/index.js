@@ -6,30 +6,38 @@ const loggerSanitizer = (data) => {
 
   // define list of keys to sanitize
   const blacklistedLogKeys = ['pass', 'password', 'pw', 'token', 'credit', 'card', 'cc'];
-
+  
   // handle arrays
   if (_isArray(data)) {
     return data.map(item => loggerSanitizer(item, blacklistedLogKeys));
   }
 
-  // handle non-objects
-  if (!_isPlainObject(data)) return data;
+  // handle strings
+  if (typeof(data)==='string') {
+    blacklistedLogKeys.forEach((key) => {
+      if (data.toLowerCase().includes(key)) {
+        data = '[redacted]';
+      }
+    });
+    return data;
+  }
 
   // handle objects
-  return Object.keys(data).reduce((acc, key) => {
-    /* eslint-disable no-param-reassign */
-    if (blacklistedLogKeys.includes(key.toLowerCase())) {
-      acc[key] = '[redacted]';
-    } else {
-      if (typeof data[key] === 'object' && data[key] !== null) {
-        acc[key] = loggerSanitizer(data[key], blacklistedLogKeys);
+  if (typeof(data)==='object' && data !== null) {
+    return Object.keys(data).reduce((acc, key) => {
+      /* eslint-disable no-param-reassign */
+      if (blacklistedLogKeys.includes(key.toLowerCase())) {
+        acc[key] = '[redacted]';
       } else {
-        acc[key] = data[key];
+        acc[key] = loggerSanitizer(data[key], blacklistedLogKeys);
       }
-    }
-    /* eslint-enable no-param-reassign */
-    return acc;
-  }, {});
+      /* eslint-enable no-param-reassign */
+      return acc;
+    }, {});
+  }
+
+  // is another type like boolean or number, return as-is
+  return data;
 };
 
 module.exports = {
