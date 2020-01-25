@@ -5,7 +5,7 @@ const _isPlainObject = require('lodash/isPlainObject');
 const loggerSanitizer = (data) => {
 
   // define list of keys to sanitize
-  const blacklistedLogKeys = ['pass', 'password', 'pw', 'token', 'credit', 'card', 'cc'];
+  const blacklistedLogKeys = ['password', 'creditcard'];
   
   // handle arrays
   if (_isArray(data)) {

@@ -8,29 +8,28 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       user: 'tester',
       password: '12345',
       data: {
-        pass: '12345',
-        cc: '2345-4242-4242-4242'
+        password: '12345',
+        Creditcard: '2345-4242-4242-4242'
       },
-      card: '2345-4242-4242-4242',
-      token: '345678',
+      creditCard: '2345-4242-4242-4242',
       happyKey: 'I am a happy key'
     };
     const data = loggerSanitizer(testLog);
     expect(data.password).toEqual('[redacted]');
-    expect(data.data.pass).toEqual('[redacted]');
-    expect(data.data.cc).toEqual('[redacted]');
-    expect(data.card).toEqual('[redacted]');
-    expect(data.token).toEqual('[redacted]');
+    expect(data.data.password).toEqual('[redacted]');
+    expect(data.data.Creditcard).toEqual('[redacted]');
+    expect(data.creditCard).toEqual('[redacted]');
   });
   it('Should not redact values for keys not on blacklisted list', () => {
     const testLog = {
       user: 'tester',
       password: '12345',
-      token: '345678',
-      happyKey: 'I am a happy key'
+      happyKey: 'I am a happy key',
+      credit: 'order1234'
     };
     const data = loggerSanitizer(testLog);
     expect(data.user).toEqual('tester');
+    expect(data.credit).toEqual('order1234');
     expect(data.happyKey).toEqual('I am a happy key');
   });
   it('Should redact a string or json value of an object if it contains blacklisted key', () => {
@@ -55,14 +54,14 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       'happyValue',
       { user: 'tester', password: '12345' },
       [
-        { user: 'tester2', pass: '123456' },
+        { user: 'tester2', password: '123456' },
         'happyValue2'
       ]
     ];
     const data = loggerSanitizer(testLog);
     expect(data[0]).toEqual('happyValue');
     expect(data[1].password).toEqual('[redacted]');
-    expect(data[2][0].pass).toEqual('[redacted]');
+    expect(data[2][0].password).toEqual('[redacted]');
     expect(data[2][1]).toEqual('happyValue2');
   });
   it('Should not redact a number, undefined, null, or boolean', () => {
