@@ -15,12 +15,8 @@ const loggerSanitizer = (data, BLACKLIST, REDACTED) => {
 
   // handle strings
   if (_isString(data)) {
-    BLACKLIST.forEach((key) => {
-      if (data.toLowerCase().includes(key)) {
-        data = REDACTED;
-      }
-    });
-    return data;
+    const stringContainsBlacklistedKeys = BLACKLIST.some(key => data.toLowerCase().indexOf(key) >= 0);
+    return stringContainsBlacklistedKeys ? REDACTED : data;
   }
 
   // handle objects
