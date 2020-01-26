@@ -1,35 +1,42 @@
 const _isArray = require('lodash/isArray');
-const _isPlainObject = require('lodash/isPlainObject');
+const _isString = require('lodash/isString');
+const _isObjectLike = require('lodash/isObjectLike');
+
+const REDACTED = '[redacted]';
+const BLACKLIST = ['password', 'creditcard'];
 
 // Replaces password info in a logging message with ['redacted']
-const loggerSanitizer = (data) => {
-
-  // define list of keys to sanitize
-  const blacklistedLogKeys = ['password', 'creditcard'];
+const loggerSanitizer = (data, BLACKLIST, REDACTED) => {
   
   // handle arrays
   if (_isArray(data)) {
-    return data.map(item => loggerSanitizer(item, blacklistedLogKeys));
+    return data.map(item => loggerSanitizer(item, BLACKLIST, REDACTED));
   }
 
   // handle strings
-  if (typeof(data)==='string') {
-    blacklistedLogKeys.forEach((key) => {
+  if (_isString(data)) {
+    BLACKLIST.forEach((key) => {
       if (data.toLowerCase().includes(key)) {
-        data = '[redacted]';
+        data = REDACTED;
       }
     });
     return data;
   }
 
   // handle objects
-  if (typeof(data)==='object' && data !== null) {
-    return Object.keys(data).reduce((acc, key) => {
+  if (_isObjectLike(data)) {
+    const objectKeys = Object.keys(data) || [];
+
+    // account for non-plain objects (Map, Set, Date, etc) - for now, redact these edge cases
+    if (objectKeys.length === 0) return REDACTED;
+
+    // account for "normal" objects
+    return objectKeys.reduce((acc, key) => {
       /* eslint-disable no-param-reassign */
-      if (blacklistedLogKeys.includes(key.toLowerCase())) {
-        acc[key] = '[redacted]';
+      if (BLACKLIST.includes(key.toLowerCase())) {
+        acc[key] = REDACTED;
       } else {
-        acc[key] = loggerSanitizer(data[key], blacklistedLogKeys);
+        acc[key] = loggerSanitizer(data[key], BLACKLIST, REDACTED);
       }
       /* eslint-enable no-param-reassign */
       return acc;
