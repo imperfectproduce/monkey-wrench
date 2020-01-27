@@ -6,11 +6,11 @@ const REDACTED = '[redacted]';
 const BLACKLIST = ['password', 'creditcard'];
 
 // Replaces password info in a logging message with ['redacted']
-const loggerSanitizer = (data, BLACKLIST, REDACTED) => {
+const loggerSanitizer = (data) => {
   
   // handle arrays
   if (_isArray(data)) {
-    return data.map(item => loggerSanitizer(item, BLACKLIST, REDACTED));
+    return data.map(item => loggerSanitizer(item));
   }
 
   // handle strings
@@ -32,7 +32,7 @@ const loggerSanitizer = (data, BLACKLIST, REDACTED) => {
       if (BLACKLIST.includes(key.toLowerCase())) {
         acc[key] = REDACTED;
       } else {
-        acc[key] = loggerSanitizer(data[key], BLACKLIST, REDACTED);
+        acc[key] = loggerSanitizer(data[key]);
       }
       /* eslint-enable no-param-reassign */
       return acc;
