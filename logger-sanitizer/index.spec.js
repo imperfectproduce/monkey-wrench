@@ -2,35 +2,36 @@
 const expect = require('expect');
 const { loggerSanitizer } = require('./index');
 
+const REDACTED = '[redacted]';
+
 describe('Logger messages sanitizer redacts blacklisted passwords, tokens and keys', () => {
   it('Should redact values for all blacklisted (sensitive) keys from log message', () => {
     const testLog = {
       user: 'tester',
       password: '12345',
       data: {
-        pass: '12345',
-        cc: '2345-4242-4242-4242'
+        password: '12345',
+        Creditcard: '2345-4242-4242-4242'
       },
-      card: '2345-4242-4242-4242',
-      token: '345678',
+      creditCard: '2345-4242-4242-4242',
       happyKey: 'I am a happy key'
     };
     const data = loggerSanitizer(testLog);
-    expect(data.password).toEqual('[redacted]');
-    expect(data.data.pass).toEqual('[redacted]');
-    expect(data.data.cc).toEqual('[redacted]');
-    expect(data.card).toEqual('[redacted]');
-    expect(data.token).toEqual('[redacted]');
+    expect(data.password).toEqual(REDACTED);
+    expect(data.data.password).toEqual(REDACTED);
+    expect(data.data.Creditcard).toEqual(REDACTED);
+    expect(data.creditCard).toEqual(REDACTED);
   });
   it('Should not redact values for keys not on blacklisted list', () => {
     const testLog = {
       user: 'tester',
       password: '12345',
-      token: '345678',
-      happyKey: 'I am a happy key'
+      happyKey: 'I am a happy key',
+      credit: 'order1234'
     };
     const data = loggerSanitizer(testLog);
     expect(data.user).toEqual('tester');
+    expect(data.credit).toEqual('order1234');
     expect(data.happyKey).toEqual('I am a happy key');
   });
   it('Should redact a string or json value of an object if it contains blacklisted key', () => {
@@ -38,12 +39,12 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       message: '"{"username":"test","password":"12345"}"' 
     };
     const data = loggerSanitizer(testLog);
-    expect(data.message).toEqual('[redacted]');
+    expect(data.message).toEqual(REDACTED);
   });
   it('Should redact a string if it contains a blacklisted key', () => {
     const testLog = 'You will never guess my password! It\'s 1234';
     const data = loggerSanitizer(testLog);
-    expect(data).toEqual('[redacted]');
+    expect(data).toEqual(REDACTED);
   });
   it('Should return the string if it doesn\'t contain a blacklisted key', () => {
     const testLog = 'happyString';
@@ -55,14 +56,14 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       'happyValue',
       { user: 'tester', password: '12345' },
       [
-        { user: 'tester2', pass: '123456' },
+        { user: 'tester2', password: '123456' },
         'happyValue2'
       ]
     ];
     const data = loggerSanitizer(testLog);
     expect(data[0]).toEqual('happyValue');
-    expect(data[1].password).toEqual('[redacted]');
-    expect(data[2][0].pass).toEqual('[redacted]');
+    expect(data[1].password).toEqual(REDACTED);
+    expect(data[2][0].password).toEqual(REDACTED);
     expect(data[2][1]).toEqual('happyValue2');
   });
   it('Should not redact a number, undefined, null, or boolean', () => {
