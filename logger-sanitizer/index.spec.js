@@ -74,9 +74,46 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       testBoolean: false
     };
     const data = loggerSanitizer(testLog);
-    expect(data.testNumber).toEqual(1234);
+    expect(data.testNumber).toEqual('1234');
     expect(data.testUndef).toBeUndefined();
     expect(data.testNull).toBeNull();
     expect(data.testBoolean).toBeFalsy();
+  });
+  it('Should not redact an Error Object\'s string representation if it does not includes a blacklisted token', () => {
+    const testLog = {
+      foo: new Error('I\'m innocuous and possibly helpful')
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.foo).toEqual('Error: I\'m innocuous and possibly helpful');
+  });
+  it('Should redact an Error Object\'s string representation if it does includes a blacklisted token', () => {
+    const testLog = {
+      foo: new Error('I might have password data')
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.foo).toEqual(REDACTED);
+  });
+  it('Should play nicely with other object types', () => {
+    const someSet = new Set();
+    someSet.add('foo');
+    const someMap = new Map();
+    someMap.set('foo', 'bar');
+    const someDate = new Date('2000/01/01');
+    const CustomObject = function(str){
+      this.foo = str;
+    };
+    const customObjectInstance = new CustomObject('bar');
+
+    const testLog = {
+      a: someSet,
+      b: someMap,
+      c: someDate,
+      d: customObjectInstance
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.a).toEqual('[object Set]');
+    expect(data.b).toEqual('[object Map]');
+    expect(data.c).toContain('Sat Jan 01 2000 00:00:00');
+    expect(data.d).toEqual('[object Object]');
   });
 });
