@@ -30,7 +30,15 @@ const loggerSanitizer = (data) => {
   }
 
   // handle strings and various object types 
-  const stringifiedData = data && _isFunction(data.toString) ? data.toString() : data; 
+  const dataAsJsonString = JSON.stringify(data);
+  let stringifiedData;
+  //if something like a Set which can't be converted to JSON then call toString
+  if (dataAsJsonString === "{}"){ 
+    stringifiedData = data && _isFunction(data.toString) ? data.toString() : data; 
+  }
+  else {
+    stringifiedData = dataAsJsonString
+  }
   if (_isString(stringifiedData)) {
     const stringContainsBlacklistedKeys = BLACKLIST.some(key => stringifiedData.toLowerCase().indexOf(key) >= 0);
     return stringContainsBlacklistedKeys ? REDACTED : stringifiedData; 
