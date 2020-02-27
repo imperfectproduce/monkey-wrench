@@ -103,17 +103,24 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       this.foo = str;
     };
     const customObjectInstance = new CustomObject('bar');
+    const CustomObjectWithToString = function(str){
+      this.foo = str;
+      this.toString = () => str;
+    }
+    const customObjectWithToStringInstance = new CustomObjectWithToString('I have a password');
 
     const testLog = {
       a: someSet,
       b: someMap,
       c: someDate,
-      d: customObjectInstance
+      d: customObjectInstance,
+      e: customObjectWithToStringInstance,
     };
     const data = loggerSanitizer(testLog);
     expect(data.a).toEqual('[object Set]');
     expect(data.b).toEqual('[object Map]');
     expect(data.c).toContain('Sat Jan 01 2000 00:00:00');
     expect(data.d).toEqual('[object Object]');
+    expect(data.e).toEqual(REDACTED);
   });
 });
