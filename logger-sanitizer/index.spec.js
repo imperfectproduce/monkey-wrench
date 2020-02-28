@@ -30,9 +30,9 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       credit: 'order1234'
     };
     const data = loggerSanitizer(testLog);
-    expect(data.user).toEqual('tester');
-    expect(data.credit).toEqual('order1234');
-    expect(data.happyKey).toEqual('I am a happy key');
+    expect(data.user).toEqual('"tester"');
+    expect(data.credit).toEqual('"order1234"');
+    expect(data.happyKey).toEqual('"I am a happy key"');
   });
   it('Should redact a string or json value of an object if it contains blacklisted key', () => {
     const testLog = { 
@@ -49,7 +49,7 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
   it('Should return the string if it doesn\'t contain a blacklisted key', () => {
     const testLog = 'happyString';
     const data = loggerSanitizer(testLog);
-    expect(data).toEqual('happyString');
+    expect(data).toEqual('"happyString"');
   });
   it('Should not filter arrays unless the array value is an object', () => {
     const testLog = [
@@ -61,10 +61,10 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       ]
     ];
     const data = loggerSanitizer(testLog);
-    expect(data[0]).toEqual('happyValue');
+    expect(data[0]).toEqual('"happyValue"');
     expect(data[1].password).toEqual(REDACTED);
     expect(data[2][0].password).toEqual(REDACTED);
-    expect(data[2][1]).toEqual('happyValue2');
+    expect(data[2][1]).toEqual('"happyValue2"');
   });
   it('Should not redact a number, undefined, null, or boolean', () => {
     const testLog = {
@@ -74,9 +74,52 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       testBoolean: false
     };
     const data = loggerSanitizer(testLog);
-    expect(data.testNumber).toEqual(1234);
+    expect(data.testNumber).toEqual('1234');
     expect(data.testUndef).toBeUndefined();
-    expect(data.testNull).toBeNull();
-    expect(data.testBoolean).toBeFalsy();
+    expect(data.testNull).toEqual('null');
+    expect(data.testBoolean).toEqual('false');
+  });
+  it('Should not redact an Error Object\'s string representation if it does not includes a blacklisted token', () => {
+    const testLog = {
+      foo: new Error('I\'m innocuous and possibly helpful')
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.foo).toEqual('Error: I\'m innocuous and possibly helpful');
+  });
+  it('Should redact an Error Object\'s string representation if it does includes a blacklisted token', () => {
+    const testLog = {
+      foo: new Error('I might have password data')
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.foo).toEqual(REDACTED);
+  });
+  it('Should play nicely with other object types', () => {
+    const someSet = new Set();
+    someSet.add('foo');
+    const someMap = new Map();
+    someMap.set('foo', 'bar');
+    const someDate = new Date('2000/01/01');
+    const CustomObject = function(str){
+      this.foo = str;
+    };
+    const customObjectInstance = new CustomObject('bar');
+    const CustomObjectWithToString = function(str){
+      this.password = str;
+    }
+    const customObjectWithToStringInstance = new CustomObjectWithToString('I have a password');
+
+    const testLog = {
+      a: someSet,
+      b: someMap,
+      c: someDate,
+      d: customObjectInstance,
+      e: customObjectWithToStringInstance,
+    };
+    const data = loggerSanitizer(testLog);
+    expect(data.a).toEqual('[object Set]');
+    expect(data.b).toEqual('[object Map]');
+    expect(data.c).toContain('2000-01-01');
+    expect(data.d).toEqual('{"foo":"bar"}');
+    expect(data.e).toEqual(REDACTED);
   });
 });
