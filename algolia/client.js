@@ -65,7 +65,8 @@ function Client(appId, key) {
   /**
    * Delete record by Id.
    * @param {string} indexName The name of the index.
-   * @param {string} options
+   * @param {string} params Algolia filtering parameters.  Cannot be empty.
+   * @param {string} options Request options for the query. 
    */
   this.deleteRecordsBy = (indexName, params, options = {}) => {
     const index = client.initIndex(indexName);
