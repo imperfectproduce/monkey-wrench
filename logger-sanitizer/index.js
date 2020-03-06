@@ -2,6 +2,7 @@ const _isArray = require('lodash/isArray');
 const _isString = require('lodash/isString');
 const _isPlainObject = require('lodash/isPlainObject');
 const _isFunction = require('lodash/isFunction');
+const _isError = require('lodash/isError');
 
 const REDACTED = '[redacted]';
 const BLACKLIST = ['password', 'creditcard'];
@@ -27,6 +28,10 @@ const loggerSanitizer = (data) => {
    // handle arrays
    if (_isArray(data)) {
     return data.map(item => loggerSanitizer(item));
+  }
+
+  if (_isError(data) && _isFunction(data.toString) && data.stack){
+    return `${data.toString()} ${data.stack}`;
   }
 
   // handle strings and various object types 

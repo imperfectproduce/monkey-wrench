@@ -79,19 +79,20 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
     expect(data.testNull).toEqual('null');
     expect(data.testBoolean).toEqual('false');
   });
-  it('Should not redact an Error Object\'s string representation if it does not includes a blacklisted token', () => {
-    const testLog = {
-      foo: new Error('I\'m innocuous and possibly helpful')
-    };
-    const data = loggerSanitizer(testLog);
-    expect(data.foo).toEqual('Error: I\'m innocuous and possibly helpful');
+  it('Should return an Error Object\'s string representation and callstack', () => {
+    const data = loggerSanitizer(new Error('I\'m innocuous and possibly helpful'));
+    expect(data).toContain('Error: I\'m innocuous and possibly helpful');
+    expect(data).toContain('monkey-wrench/logger-sanitizer/index.spec.js:'); // has callstack information
   });
-  it('Should redact an Error Object\'s string representation if it does includes a blacklisted token', () => {
-    const testLog = {
-      foo: new Error('I might have password data')
-    };
-    const data = loggerSanitizer(testLog);
-    expect(data.foo).toEqual(REDACTED);
+  it('Should return a custom Error Object\'s string representation and callstack', () => {
+    class MyCustomError extends Error {
+      constructor(message) {
+        super(message);
+      }
+    }
+    const data = loggerSanitizer(new MyCustomError('I\'m innocuous and possibly helpful'));
+    expect(data).toContain('Error: I\'m innocuous and possibly helpful');
+    expect(data).toContain('monkey-wrench/logger-sanitizer/index.spec.js:'); // has callstack information
   });
   it('Should play nicely with other object types', () => {
     const someSet = new Set();
