@@ -82,7 +82,7 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
   it('Should return an Error Object\'s string representation and callstack', () => {
     const data = loggerSanitizer(new Error('I\'m innocuous and possibly helpful'));
     expect(data).toContain('Error: I\'m innocuous and possibly helpful');
-    expect(data).toContain('monkey-wrench/logger-sanitizer/index.spec.js:'); // has callstack information
+    expect(data).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
   });
   it('Should return a custom Error Object\'s string representation and callstack', () => {
     class MyCustomError extends Error {
@@ -92,7 +92,7 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
     }
     const data = loggerSanitizer(new MyCustomError('I\'m innocuous and possibly helpful'));
     expect(data).toContain('Error: I\'m innocuous and possibly helpful');
-    expect(data).toContain('monkey-wrench/logger-sanitizer/index.spec.js:'); // has callstack information
+    expect(data).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
   });
   it('Should play nicely with other object types', () => {
     const someSet = new Set();
