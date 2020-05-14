@@ -23,9 +23,14 @@ jobs:
       - run:
           name: Tests
           command: yarn test
+      - persist_to_workspace:
+          root: ~/repo
+          paths: .
   publish:
     <<: *defaults
     steps:
+      - attach_workspace:
+          at: ~/repo
       - run:
           name: Publish package
           command: npm publish
@@ -41,3 +46,5 @@ workflows:
           filters:
             tags:
               only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+            branches:
+              ignore: /.*/
