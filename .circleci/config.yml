@@ -42,12 +42,12 @@ workflows:
       - build
           filters:
             tags:
-              only: /*/
+              only: /.*/
       - publish:
           requires:
             - build
           filters:
             tags:
-              only: /^kyletest*/
+              only: /^kyletest.*/
             branches:
               ignore: /.*/
