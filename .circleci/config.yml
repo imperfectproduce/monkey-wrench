@@ -36,8 +36,8 @@ workflows:
     jobs:
       - build
       - publish:
-        requires:
-          - build
-        filters:
-          tags:
-            only: /^v.*.*.*/
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*.*.*/
