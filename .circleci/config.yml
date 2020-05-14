@@ -35,8 +35,8 @@ jobs:
           name: Authenticate with Github Packages
           command: echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
       - run:
-        name: Local Workspace Authenticate with Github Packages
-        command: echo "\n//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/repo/.npmrc
+          name: Local Workspace Authenticate with Github Packages
+          command: echo "\n//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/repo/.npmrc
       - run:
           name: Publish package
           command: npm publish
