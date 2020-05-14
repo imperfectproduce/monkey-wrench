@@ -42,7 +42,7 @@ workflows:
       - build
           filters:
             tags:
-                only: /*/
+              only: /*/
       - publish:
           requires:
             - build
