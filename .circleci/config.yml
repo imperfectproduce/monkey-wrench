@@ -51,6 +51,6 @@ workflows:
             - build
           filters:
             tags:
-              only: /^kyletest.*/
+              only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
             branches:
               ignore: /.*/
