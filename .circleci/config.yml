@@ -43,10 +43,12 @@ workflows:
   build-deploy:
     jobs:
       - build:
+          context: github
           filters:
             tags:
               only: /.*/
       - publish:
+          context: github
           requires:
             - build
           filters:
