@@ -32,7 +32,8 @@
     "moment-timezone": "^0.5.16",
     "react": "16.2.0",
     "react-redux": "^5.0.7",
-    "redux": "^3.7.2"
+    "redux": "^3.7.2",
+    "traverse": "^0.6.6"
   },
   "devDependencies": {
     "expect": "^24.9.0",
