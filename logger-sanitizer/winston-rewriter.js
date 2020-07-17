@@ -5,7 +5,7 @@
 //
 // Features:
 //
-// - Blacklist sanitization. Any value whose key appears in the `BLACKLIST`
+// - Blocklist sanitization. Any value whose key appears in the `BLOCKLIST`
 //   array is redacted.
 // - Decycling. Any circular references are removed.
 // - JSON enrichment. Maps and Sets are serialized in a lossy but identifiable
@@ -19,9 +19,9 @@
 
 const traverse = require('traverse');
 
-// Blacklist should contain only lowercase words. Sanitizer will case normalize
+// Blocklist should contain only lowercase words. Sanitizer will case normalize
 // when looking up keys.
-const BLACKLIST = ['password', 'creditcard'];
+const BLOCKLIST = ['password', 'creditcard'];
 const REDACTED = '[redacted]';
 
 function enrichJSON(value) {
@@ -43,20 +43,20 @@ function enrichJSON(value) {
 }
 
 module.exports = function logSanitizer(level, message, meta) {
-  const blackListed = term => term && BLACKLIST.includes(term.toLowerCase());
+  const blockListed = term => term && BLOCKLIST.includes(term.toLowerCase());
 
   return traverse(meta).map(function(v) {
-	// Each value in the meta object has exactly one interpretation, as far as
-	// serialization is concerned.
-	switch (true) {
-	  case blackListed(this.key):
-		this.update(REDACTED);
-		break;
-	  case !!this.circular:
-		this.update('[Circular]');
-		break;
-	  default:
-		this.update(enrichJSON(v));
-	}
+    // Each value in the meta object has exactly one interpretation, as far as
+    // serialization is concerned.
+    switch (true) {
+      case blockListed(this.key):
+        this.update(REDACTED);
+        break;
+      case !!this.circular:
+        this.update('[Circular]');
+        break;
+      default:
+        this.update(enrichJSON(v));
+    }
   });
 };

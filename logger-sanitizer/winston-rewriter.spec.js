@@ -2,7 +2,7 @@ const expect = require('expect');
 const winstonRewriter = require('./winston-rewriter');
 
 describe('winston-rewriter logging sanitization/redaction', () => {
-  it('Should redact blacklisted terms case-insensitively', () => {
+  it('Should redact blocklisted terms case-insensitively', () => {
 	const secrets = {
 	  password: { entireObjectWillBe: 'redacted' },
 	  safeword: 'banana',
