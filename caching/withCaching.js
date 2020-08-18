@@ -15,7 +15,6 @@ const tryGetFromCache = ({ cache, key, logger, name }) => {
       return [cachedValue, false];
     })
     .catch(error => {
-      // we should not error here - but swallow errors here as we don't want to fail
       // if something goes wrong reading from cache
       logger.error({
         message: 'Error accessing cache',
@@ -23,7 +22,7 @@ const tryGetFromCache = ({ cache, key, logger, name }) => {
         key,
         error
       });
-      return [null, true];
+      throw error;
     });
 };
 
@@ -47,10 +46,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     const key = cacheKeySerializer.apply(null, args);
 
     return tryGetFromCache({ cache, key, logger, name })
-      .then(([cachedValue, didError]) => {
-        if (!cachedValue && didError) {
-          return { result: cachedValue, cacheHit: false, error: true };
-        }
+      .then(cachedValue => {
 
         if (!cachedValue) {
           return fn.apply(null, args)
@@ -76,6 +72,9 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         }
 
         return result;
+      })
+      .catch(error => {
+          return { result: null, cacheHit: false, error };
       });
   };
 };
