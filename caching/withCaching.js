@@ -11,6 +11,9 @@ const argsCacheKeySerializer = (...args) => {
 
 const tryGetFromCache = ({ cache, key, logger, name }) => {
   return cache.get(key)
+    .then(cachedValue => {
+      return [cachedValue, false];
+    })
     .catch(error => {
       // if something goes wrong reading from cache
       logger.error({
@@ -19,7 +22,7 @@ const tryGetFromCache = ({ cache, key, logger, name }) => {
         key,
         error
       });
-      throw error;
+      return [null,  true];
     });
 };
 
@@ -43,17 +46,17 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     const key = cacheKeySerializer.apply(null, args);
 
     return tryGetFromCache({ cache, key, logger, name })
-      .then(cachedValue => {
+      .then(([cachedValue, didError]) => {
 
         if (!cachedValue) {
           return fn.apply(null, args)
-            .then(result => ({ result, cacheHit: false }));
+            .then(result => ({ result, cacheHit: false, didError }));
         }
 
         const finalCachedValue = withCompression ? compressionLib.decompress(cachedValue) : cachedValue;
-        return { result: finalCachedValue, cacheHit: true };
+        return { result: finalCachedValue, cacheHit: true, didError };
       })
-      .then(({ result, cacheHit }) => {
+      .then(({ result, cacheHit, didError }) => {
         logger.info({
           name,
           key,
@@ -61,8 +64,9 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
           ms: Date.now() - start
         }, ['cache-metrics']);
 
-        // add to cache if this request was not a cache hit, and we got a result (truthy value)
-        if (!cacheHit && result) {
+        // add to cache if this request was not a cache hit, we got a result (truthy value),
+        // and there was no error reading from the cache
+        if (!cacheHit && result && !didError) {
           const finalResultForCache = withCompression ? compressionLib.compress(result) : result;
           // fire and forget
           cache.set(key, finalResultForCache, expirationSeconds);
