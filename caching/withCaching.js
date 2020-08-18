@@ -54,7 +54,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         }
 
         console.log(cachedValue, "value from cache");
-        const finalCachedValue = withCompression ? compressionLib.decompress(cachedValue) : cachedValue;
+        const finalCachedValue = withCompression ? compressionLib.decompress(cachedValue.payload, cachedValue.length) : cachedValue;
         console.log(finalCachedValue, "final value from cache");
         return { result: finalCachedValue, cacheHit: true, didError };
       })
@@ -70,10 +70,18 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         // and there was no error reading from the cache
         if (!cacheHit && result && !didError) {
           console.log(result, "To be cached");
-          const finalResultForCache = withCompression ? compressionLib.compress(result) : result;
-          // fire and forget
-          console.log(finalResultForCache, "final insert for cache");
-          cache.set(key, finalResultForCache, expirationSeconds);
+          if (withCompression) {
+          const compressedResultForCache = compressionLib.compress(result);
+            console.log(compressedResultForCache, "final insert for cache");
+            // fire and forget
+            cache.set(key, {
+              payload: compressedResultForCache,
+              length: result.length
+            }, expirationSeconds);
+          } else {
+            // fire and forget
+            cache.set(key, result, expirationSeconds);
+          }
         }
         return result;
       })
