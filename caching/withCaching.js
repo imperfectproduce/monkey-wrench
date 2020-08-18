@@ -10,19 +10,20 @@ const argsCacheKeySerializer = (...args) => {
 };
 
 const tryGetFromCache = ({ cache, key, logger, name }) => {
-  return cache.get(key)
-    .then(cachedValue => {
+  return cache
+    .get(key)
+    .then((cachedValue) => {
       return [cachedValue, false];
     })
-    .catch(error => {
+    .catch((error) => {
       // if something goes wrong reading from cache
       logger.error({
         message: 'Error accessing cache',
         name,
         key,
-        error
+        error,
       });
-      return [null,  true];
+      return [null, true];
     });
 };
 
@@ -33,12 +34,12 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
   const {
     name = null, // optionally included in logging if provided
     cacheKeySerializer = argsCacheKeySerializer,
-    options = {}
+    options = {},
   } = params;
   const {
     expirationSeconds = 300, // 5 mins
     withCompression = false,
-    compressionLib = lzo
+    compressionLib = lzo,
   } = options;
 
   return (...args) => {
@@ -47,33 +48,42 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
     return tryGetFromCache({ cache, key, logger, name })
       .then(([cachedValue, didError]) => {
-
         if (!cachedValue) {
-          return fn.apply(null, args)
-            .then(result => ({ result, cacheHit: false, didError }));
+          return fn
+            .apply(null, args)
+            .then((result) => ({ result, cacheHit: false, didError }));
         }
 
-        const finalCachedValue = withCompression ? compressionLib.decompress(cachedValue.payload, cachedValue.length) : cachedValue;
+        const finalCachedValue = withCompression
+          ? compressionLib.decompress(cachedValue.payload, cachedValue.length)
+          : cachedValue;
         return { result: finalCachedValue, cacheHit: true, didError };
       })
       .then(({ result, cacheHit, didError }) => {
-        logger.info({
-          name,
-          key,
-          cacheHit,
-          ms: Date.now() - start
-        }, ['cache-metrics']);
+        logger.info(
+          {
+            name,
+            key,
+            cacheHit,
+            ms: Date.now() - start,
+          },
+          ['cache-metrics']
+        );
 
         // add to cache if this request was not a cache hit, we got a result (truthy value),
         // and there was no error reading from the cache
         if (!cacheHit && result && !didError) {
           if (withCompression) {
-          const compressedResultForCache = compressionLib.compress(result);
+            const compressedResultForCache = compressionLib.compress(result);
             // fire and forget
-            cache.set(key, {
-              payload: compressedResultForCache,
-              length: result.length
-            }, expirationSeconds);
+            cache.set(
+              key,
+              {
+                payload: compressedResultForCache,
+                length: result.length,
+              },
+              expirationSeconds
+            );
           } else {
             // fire and forget
             cache.set(key, result, expirationSeconds);
@@ -81,8 +91,8 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         }
         return result;
       })
-      .catch(error => {
-          return { result: null, cacheHit: false, error };
+      .catch((error) => {
+        return { result: null, cacheHit: false, error };
       });
   };
 };
