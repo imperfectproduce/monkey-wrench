@@ -1,8 +1,8 @@
 /*
 Generic read-through cache wrapper to cache the result of any function returning a promise.
-Zero dependencies, these are all passed as function arguments.
 Safe - Failures to read from the cache result in the underlying function being called.
 */
+import lzo from 'lzo';
 
 // concatates and serializes args
 const argsCacheKeySerializer = (...args) => {
@@ -35,7 +35,9 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     options = {}
   } = params;
   const {
-    expirationSeconds = 300 // 5 mins
+    expirationSeconds = 300, // 5 mins
+    withCompression = false,
+    compressionLib = lzo
   } = options;
 
   return (...args) => {
@@ -49,7 +51,8 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
             .then(result => ({ result, cacheHit: false }));
         }
 
-        return { result: cachedValue, cacheHit: true };
+        const finalCachedValue = withCompression ? compressionLib.decompress(result) : result;
+        return { result: finalCachedValue, cacheHit: true };
       })
       .then(({ result, cacheHit }) => {
         logger.info({
@@ -61,8 +64,9 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
         // add to cache if this request was not a cache hit, and we got a result (truthy value)
         if (!cacheHit && result) {
+          const finalResultForCache = withCompression ? compressionLib.compress(result) : result;
           // fire and forget
-          cache.set(key, result, expirationSeconds);
+          cache.set(key, finalResultForCache, expirationSeconds);
         }
 
         return result;
