@@ -2,7 +2,7 @@
 Generic read-through cache wrapper to cache the result of any function returning a promise.
 Safe - Failures to read from the cache result in the underlying function being called.
 */
-import lzo from 'lzo';
+const lzo = require('lzo');
 
 // concatates and serializes args
 const argsCacheKeySerializer = (...args) => {
