@@ -57,7 +57,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
             .then(result => ({ result, cacheHit: false }));
         }
 
-        const finalCachedValue = withCompression ? compressionLib.decompress(result) : result;
+        const finalCachedValue = withCompression ? compressionLib.decompress(cachedValue) : cachedValue;
         return { result: finalCachedValue, cacheHit: true };
       })
       .then(({ result, cacheHit }) => {
