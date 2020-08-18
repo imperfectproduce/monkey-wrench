@@ -49,7 +49,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     return tryGetFromCache({ cache, key, logger, name })
       .then(([cachedValue, didError]) => {
         if (!cachedValue && didError) {
-          return { result: null, cacheHit: false, error: true };
+          return { result: cachedValue, cacheHit: false, error: true };
         }
 
         if (!cachedValue) {
