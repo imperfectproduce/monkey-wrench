@@ -39,7 +39,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
   const {
     expirationSeconds = 300, // 5 mins
     withCompression = false,
-    compressionLib = lzo,
+    compressionLib = snappy,
   } = options;
 
   return (...args) => {
@@ -56,7 +56,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
         const finalCachedValue = withCompression
           ? new Promise((resolve, reject) => {
-            compressionLib.uncompress(myBuffeBuffer.from(cachedValue.data), {asBuffer: false}, (err, uncompressed) => {
+            compressionLib.uncompress(Buffer.from(cachedValue.data), { asBuffer: false }, (err, uncompressed) => {
               if (err){
                 reject(err);
               }
