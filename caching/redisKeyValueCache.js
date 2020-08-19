@@ -45,7 +45,7 @@ function RedisKeyValueCache(options = {}) {
   if (!host) throw new Error('Missing redis host');
   if (!port) throw new Error('Missing redis port');
 
-  const client = redis.createClient({ host, port });
+  const client = redis.createClient({ host, port, detect_buffers: true });
   if (onConnectionEvent) {
     subscribeToConnectionEvents(client, onConnectionEvent);
   }

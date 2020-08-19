@@ -2,7 +2,7 @@
 Generic read-through cache wrapper to cache the result of any function returning a promise.
 Safe - Failures to read from the cache result in the underlying function being called.
 */
-const lzo = require('lzo');
+const snappy = require('snappy');
 
 // concatates and serializes args
 const argsCacheKeySerializer = (...args) => {
@@ -55,9 +55,19 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         }
 
         const finalCachedValue = withCompression
-          ? compressionLib.decompress(cachedValue.payload, cachedValue.length)
-          : cachedValue;
-        return { result: finalCachedValue, cacheHit: true, didError };
+          ? new Promise((resolve, reject) => {
+            compressionLib.uncompress(myBuffeBuffer.from(cachedValue.data), {asBuffer: false}, (err, uncompressed) => {
+              if (err){
+                reject(err);
+              }
+              resolve(JSON.parse(uncompressed));
+            })
+          })
+          : Promise.resolve(cachedValue);
+
+          return finalCachedValue.then((cacheValue) => {
+            return { result: cacheValue, cacheHit: true, didError };
+          })
       })
       .then(({ result, cacheHit, didError }) => {
         logger.info(
@@ -74,16 +84,16 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         // and there was no error reading from the cache
         if (!cacheHit && result && !didError) {
           if (withCompression) {
-            const compressedResultForCache = compressionLib.compress(result);
-            // fire and forget
-            cache.set(
-              key,
-              {
-                payload: compressedResultForCache,
-                length: result.length,
-              },
-              expirationSeconds
-            );
+            compressionLib.compress(JSON.stringify(result), (err, compressed) => {
+              if (err){
+                throw err;
+              }
+              cache.set(
+                key,
+                compressed,
+                expirationSeconds
+              );
+            });
           } else {
             // fire and forget
             cache.set(key, result, expirationSeconds);
