@@ -13,17 +13,17 @@ const tryGetFromCache = ({ cache, key, logger, name }) => {
   return cache
     .get(key)
     .then((cachedValue) => {
-      return [cachedValue, false];
+      return cachedValue;
     })
     .catch((error) => {
       // if something goes wrong reading from cache
       logger.error({
-        message: 'Error accessing cache',
+        message: 'Error accessing cache, backing off',
         name,
         key,
         error,
       });
-      return [null, true];
+      throw error;
     });
 };
 
@@ -47,11 +47,12 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     const key = cacheKeySerializer.apply(null, args);
 
     return tryGetFromCache({ cache, key, logger, name })
-      .then(([cachedValue, didError]) => {
+      .then((cachedValue) => {
+
         if (!cachedValue) {
           return fn
             .apply(null, args)
-            .then((result) => ({ result, cacheHit: false, didError }));
+            .then((result) => ({ result, cacheHit: false }));
         }
 
         const finalCachedValue = withCompression
@@ -66,10 +67,10 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
           : Promise.resolve(cachedValue);
 
           return finalCachedValue.then((cacheValue) => {
-            return { result: cacheValue, cacheHit: true, didError };
+            return { result: cacheValue, cacheHit: true };
           })
       })
-      .then(({ result, cacheHit, didError }) => {
+      .then(({ result, cacheHit }) => {
         logger.info(
           {
             name,
@@ -82,7 +83,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
         // add to cache if this request was not a cache hit, we got a result (truthy value),
         // and there was no error reading from the cache
-        if (!cacheHit && result && !didError) {
+        if (!cacheHit && result) {
           if (withCompression) {
             compressionLib.compress(JSON.stringify(result), (err, compressed) => {
               if (err){
@@ -101,9 +102,6 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         }
         return result;
       })
-      .catch((error) => {
-        return { result: null, cacheHit: false, error };
-      });
   };
 };
 
