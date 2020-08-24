@@ -58,7 +58,9 @@ function RedisKeyValueCache(options = {}) {
 
   this.set = (key, value, expirationSeconds = 60) => {
     const serializedValue = JSON.stringify(value);
-    return client.setAsync(key, serializedValue, 'EX', expirationSeconds);
+    const jitter = parseInt(Math.random() * 10, 10);
+    const expires = expirationSeconds + jitter;
+    return client.setAsync(key, serializedValue, 'EX', expires);
   };
 
   this.deleteKey = (key) => {
