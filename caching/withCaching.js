@@ -57,7 +57,7 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
         const finalCachedValue = withCompression
           ? new Promise((resolve, reject) => {
-            compressionLib.uncompress(Buffer.from(cachedValue.data), { asBuffer: false }, (err, uncompressed) => {
+            compressionLib.uncompress(Buffer.from(cachedValue), { asBuffer: true }, (err, uncompressed) => {
               if (err){
                 reject(err);
               }
