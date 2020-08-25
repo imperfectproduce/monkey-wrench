@@ -12,9 +12,6 @@ const argsCacheKeySerializer = (...args) => {
 const tryGetFromCache = ({ cache, key, logger, name }) => {
   return cache
     .get(key)
-    .then((cachedValue) => {
-      return cachedValue;
-    })
     .catch((error) => {
       // if something goes wrong reading from cache
       logger.error({
