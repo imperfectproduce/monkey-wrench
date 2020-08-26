@@ -71,7 +71,7 @@ function RedisKeyValueCache(options = {}) {
 
   this.deserializeResult = (result) => {
     if (useCompression) {
-      return this.parseCompressedResult(result);
+      return this.deserializeCompressedResult(result);
     }
     return JSON.parse(result);
   };
