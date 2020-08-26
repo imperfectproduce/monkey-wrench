@@ -2,7 +2,6 @@
 Generic read-through cache wrapper to cache the result of any function returning a promise.
 Safe - Failures to read from the cache result in the underlying function being called.
 */
-const snappy = require('snappy');
 
 // concatates and serializes args
 const argsCacheKeySerializer = (...args) => {
@@ -35,8 +34,6 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
   } = params;
   const {
     expirationSeconds = 300, // 5 mins
-    withCompression = false,
-    compressionLib = snappy,
   } = options;
 
   return (...args) => {
@@ -44,28 +41,13 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     const key = cacheKeySerializer.apply(null, args);
 
     return tryGetFromCache({ cache, key, logger, name })
-      .then((cachedValue) => {
-
-        if (!cachedValue) {
+      .then((result) => {
+        if (!result) {
           return fn
             .apply(null, args)
-            .then((result) => ({ result, cacheHit: false }));
+            .then((fnResult) => ({ result: fnResult, cacheHit: false }));
         }
-
-        const finalCachedValue = withCompression
-          ? new Promise((resolve, reject) => {
-            compressionLib.uncompress(Buffer.from(cachedValue), { asBuffer: true }, (err, uncompressed) => {
-              if (err){
-                reject(err);
-              }
-              resolve(JSON.parse(uncompressed));
-            })
-          })
-          : Promise.resolve(cachedValue);
-
-          return finalCachedValue.then((cacheValue) => {
-            return { result: cacheValue, cacheHit: true };
-          })
+        return { result, cacheHit: true };
       })
       .then(({ result, cacheHit }) => {
         logger.info(
@@ -81,24 +63,11 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
         // add to cache if this request was not a cache hit, we got a result (truthy value),
         // and there was no error reading from the cache
         if (!cacheHit && result) {
-          if (withCompression) {
-            compressionLib.compress(JSON.stringify(result), (err, compressed) => {
-              if (err){
-                throw err;
-              }
-              cache.set(
-                key,
-                compressed,
-                expirationSeconds
-              );
-            });
-          } else {
             // fire and forget
-            cache.set(key, result, expirationSeconds);
-          }
+          cache.set(key, result, expirationSeconds);
         }
         return result;
-      })
+      });
   };
 };
 
