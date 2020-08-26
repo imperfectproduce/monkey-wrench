@@ -41,6 +41,9 @@ function RedisKeyValueCache(options = {}) {
     // don't get stuck not being able to access the cache
     // getAsync throws a bluebird Promise.TimeoutError error after specified milliseconds
     getTimeoutMs = 500,
+    // 🚩 If you plan to flip this flag on a running cache, you'll have
+    // ${expirationSeconds} where the cache will serve 500s.
+    // 🤠 You could flush the cache on successful deploy to mitigate this.
     useCompression
   } = options;
 
