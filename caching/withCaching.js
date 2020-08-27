@@ -1,6 +1,5 @@
 /*
 Generic read-through cache wrapper to cache the result of any function returning a promise.
-Zero dependencies, these are all passed as function arguments.
 Safe - Failures to read from the cache result in the underlying function being called.
 */
 
@@ -10,18 +9,17 @@ const argsCacheKeySerializer = (...args) => {
 };
 
 const tryGetFromCache = ({ cache, key, logger, name }) => {
-  return cache.get(key)
-    .catch(error => {
-      // we should not error here - but swallow errors here as we don't want to fail
+  return cache
+    .get(key)
+    .catch((error) => {
       // if something goes wrong reading from cache
       logger.error({
-        message: 'Error accessing cache',
+        message: 'Error accessing cache, backing off',
         name,
         key,
-        error
+        error,
       });
-
-      return null;
+      throw error;
     });
 };
 
@@ -32,10 +30,10 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
   const {
     name = null, // optionally included in logging if provided
     cacheKeySerializer = argsCacheKeySerializer,
-    options = {}
+    options = {},
   } = params;
   const {
-    expirationSeconds = 300 // 5 mins
+    expirationSeconds = 300, // 5 mins
   } = options;
 
   return (...args) => {
@@ -43,28 +41,31 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
     const key = cacheKeySerializer.apply(null, args);
 
     return tryGetFromCache({ cache, key, logger, name })
-      .then(cachedValue => {
-        if (!cachedValue) {
-          return fn.apply(null, args)
-            .then(result => ({ result, cacheHit: false }));
+      .then((result) => {
+        if (!result) {
+          return fn
+            .apply(null, args)
+            .then((fnResult) => ({ result: fnResult, cacheHit: false }));
         }
-
-        return { result: cachedValue, cacheHit: true };
+        return { result, cacheHit: true };
       })
       .then(({ result, cacheHit }) => {
-        logger.info({
-          name,
-          key,
-          cacheHit,
-          ms: Date.now() - start
-        }, ['cache-metrics']);
+        logger.info(
+          {
+            name,
+            key,
+            cacheHit,
+            ms: Date.now() - start,
+          },
+          ['cache-metrics']
+        );
 
-        // add to cache if this request was not a cache hit, and we got a result (truthy value)
+        // add to cache if this request was not a cache hit, we got a result (truthy value),
+        // and there was no error reading from the cache
         if (!cacheHit && result) {
-          // fire and forget
+            // fire and forget
           cache.set(key, result, expirationSeconds);
         }
-
         return result;
       });
   };
