@@ -23,6 +23,9 @@ const tryGetFromCache = ({ cache, key, logger, name }) => {
     });
 };
 
+const isLogger = thing =>
+  thing && ['debug', 'info', 'warn', 'error'].every(fn => typeof thing[fn] === 'function');
+
 /*
 Read-through cache wrapper function to enhance any fn returning a promise
 */
@@ -38,7 +41,12 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
 
   return (...args) => {
     const start = Date.now();
-    const key = cacheKeySerializer.apply(null, args);
+    const key = cacheKeySerializer.apply(null, args.filter(arg => !isLogger(arg)));
+	const contextualLogger = args.find(isLogger);
+	if (contextualLogger) {
+	  // eslint-disable-next-line
+	  logger = contextualLogger;
+	}
 
     return tryGetFromCache({ cache, key, logger, name })
       .then((result) => {
