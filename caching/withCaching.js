@@ -52,9 +52,9 @@ const cacheWrapper = (fn, cache, logger, params = {}) => {
       .then(({ result, cacheHit }) => {
         logger.info(
           {
+            message: `Cache ${ cacheHit ? 'hit' : 'miss' }`,
             name,
             key,
-            cacheHit,
             ms: Date.now() - start,
           },
           ['cache-metrics']
