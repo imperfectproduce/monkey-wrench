@@ -33,10 +33,10 @@
     "lodash": "^4.17.15",
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
-    "react": "16.2.0",
-    "react-redux": "^5.0.7",
+    "react": "^16.13.1",
+    "react-redux": "^7.2.1",
     "redis": "^3.0.2",
-    "redux": "^3.7.2",
+    "redux": "^4.0.5",
     "snappy": "^6.3.4"
   },
   "devDependencies": {
