@@ -74,14 +74,13 @@ function Client(appId, key) {
   };
 
   /**
-   * Batch update records.
+   * Batch record operations.
    * @param {string} indexName The name of the index.
    * @param {string} operations Algolia filtering parameters.  Cannot be empty.
    * @param {string} options Request options for the query. 
    */
-  this.batch = (indexName, operations) => {
-    const index = client.initIndex(indexName);
-    return index.batch(operations);
+  this.batch = (operations, options = {}) => {
+    return client.batch(operations, options);
   };
 
 
