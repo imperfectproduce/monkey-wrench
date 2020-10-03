@@ -14,23 +14,19 @@ export const DEFAULT_BLOCK_LIST = ['password', 'creditcard'];
  * Original from node-logger
  */
 const format = value => {
-  // Sets and Maps have no JSON representation, so just iterate their values
-  // into an array.
-  if (isSet(value)) {
+  // Sets and Maps have no JSON representation, return as an array.
+  if (isSet(value) || isMap(value)) {
     return [...value];
   }
-  if (isMap(value)) {
-    return [...value];
-  }
+
   // Errors do not have a JSON representation by default. Ensure that we get a
   // stack trace. Some 3rd-party libraries are kind enough to implement a toJSON
   // method. Use it if it's provided.
   if (isError(value)) {
-    const rest = isSerializer(value) ? value.toJSON() : {};
     return Object.assign({
       message: value.message,
       stack: value.stack,
-    }, rest);
+    }, isSerializer(value) ? value.toJSON() : {});
   }
 
   return value;
@@ -44,25 +40,22 @@ const format = value => {
 const loggerSanitizer = (meta, blocklist = DEFAULT_BLOCK_LIST) => {
   const blockListed = (term) => {
     const normalized = isString(term) ? term.toLowerCase() : term;
-    // Does the normalized term contain any blocklisted keys
+    // Does the normalized term contain any blocklisted keys?
     return normalized && blocklist.some(b => normalized.includes(b));
   };
-  
-  if (isString(meta)) {
-    return blockListed(meta) ? REDACTED : meta;
-  }
 
-  return traverse(meta).forEach(function(v) {
-    // Each value in the meta object has exactly one interpretation, as far as
-    // serialization is concerned.
-    if (blockListed(this.key) || (isString(v) && blockListed(v))) {
+  return traverse(meta).forEach(function(value) {
+    // the key or the (string) value blocklisted?
+    if (blockListed(this.key) || (isString(value) && blockListed(value))) {
       this.update(REDACTED);
 
+    // if a circular reference is encountered, handle gracefully
+    // TODO: Needs a unit test
     } else if (!!this.circular) {
       this.update("[Circular]");
 
     } else {
-      this.update(format(v));
+      this.update(format(value));
     }
   });
 };
