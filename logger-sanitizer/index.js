@@ -1,55 +1,70 @@
-const _isArray = require('lodash/isArray');
-const _isString = require('lodash/isString');
-const _isPlainObject = require('lodash/isPlainObject');
-const _isFunction = require('lodash/isFunction');
-const _isError = require('lodash/isError');
+const traverse = require("traverse");
+
+const isString = v => typeof v === "string"
+const isSet = v => v instanceof Set;
+const isMap = v => v instanceof Map;
+const isError = v => v instanceof Error;
+const isSerializer = v => v && typeof v.toJSON === "function";
 
 const REDACTED = '[redacted]';
-const BLACKLIST = ['password', 'creditcard'];
+export const DEFAULT_BLOCK_LIST = ['password', 'creditcard'];
 
-// Replaces password info in a logging message with ['redacted']
-const loggerSanitizer = (data) => {
-
-  // handle objects
-  if (_isPlainObject(data)) {
-    const objectKeys = Object.keys(data) || [];
-    return objectKeys.reduce((acc, key) => {
-      /* eslint-disable no-param-reassign */
-      if (BLACKLIST.includes(key.toLowerCase())) {
-        acc[key] = REDACTED;
-      } else {
-        acc[key] = loggerSanitizer(data[key]);
-      }
-      /* eslint-enable no-param-reassign */
-      return acc;
-    }, {});
+/*
+ * Formats a value for logging
+ * Original from node-logger
+ */
+const format = value => {
+  // Sets and Maps have no JSON representation, so just iterate their values
+  // into an array.
+  if (isSet(value)) {
+    return [...value];
+  }
+  if (isMap(value)) {
+    return [...value];
+  }
+  // Errors do not have a JSON representation by default. Ensure that we get a
+  // stack trace. Some 3rd-party libraries are kind enough to implement a toJSON
+  // method. Use it if it's provided.
+  if (isError(value)) {
+    const rest = isSerializer(value) ? value.toJSON() : {};
+    return Object.assign({
+      message: value.message,
+      stack: value.stack,
+    }, rest);
   }
 
-   // handle arrays
-   if (_isArray(data)) {
-    return data.map(item => loggerSanitizer(item));
+  return value;
+};
+
+/*
+ * Replaces blocklisted fields with ['redacted']
+ * Adapted from to fix issues of circular references
+ * https://github.com/imperfectproduce/node-logger/blob/main/src/sanitizer.ts
+ */
+const loggerSanitizer = (meta, blocklist = DEFAULT_BLOCK_LIST) => {
+  const blockListed = (term) => {
+    const normalized = isString(term) ? term.toLowerCase() : term;
+    // Does the normalized term contain any blocklisted keys
+    return normalized && blocklist.some(b => normalized.includes(b));
+  };
+  
+  if (isString(meta)) {
+    return blockListed(meta) ? REDACTED : meta;
   }
 
-  if (_isError(data) && _isFunction(data.toString) && data.stack){
-    return `${data.toString()} ${data.stack}`;
-  }
+  return traverse(meta).forEach(function(v) {
+    // Each value in the meta object has exactly one interpretation, as far as
+    // serialization is concerned.
+    if (blockListed(this.key) || (isString(v) && blockListed(v))) {
+      this.update(REDACTED);
 
-  // handle strings and various object types 
-  const dataAsJsonString = JSON.stringify(data);
-  let stringifiedData;
-  //if something like a Set which can't be converted to JSON then call toString
-  if (dataAsJsonString === "{}"){ 
-    stringifiedData = data && _isFunction(data.toString) ? data.toString() : data; 
-  }
-  else {
-    stringifiedData = dataAsJsonString
-  }
-  if (_isString(stringifiedData)) {
-    const stringContainsBlacklistedKeys = BLACKLIST.some(key => stringifiedData.toLowerCase().indexOf(key) >= 0);
-    return stringContainsBlacklistedKeys ? REDACTED : stringifiedData; 
-  }
+    } else if (!!this.circular) {
+      this.update("[Circular]");
 
-  return data;
+    } else {
+      this.update(format(v));
+    }
+  });
 };
 
 module.exports = {

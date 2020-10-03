@@ -30,9 +30,9 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       credit: 'order1234'
     };
     const data = loggerSanitizer(testLog);
-    expect(data.user).toEqual('"tester"');
-    expect(data.credit).toEqual('"order1234"');
-    expect(data.happyKey).toEqual('"I am a happy key"');
+    expect(data.user).toEqual(testLog.user);
+    expect(data.credit).toEqual(testLog.credit);
+    expect(data.happyKey).toEqual(testLog.happyKey);
   });
   it('Should redact a string or json value of an object if it contains blacklisted key', () => {
     const testLog = { 
@@ -49,7 +49,7 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
   it('Should return the string if it doesn\'t contain a blacklisted key', () => {
     const testLog = 'happyString';
     const data = loggerSanitizer(testLog);
-    expect(data).toEqual('"happyString"');
+    expect(data).toEqual(testLog);
   });
   it('Should not filter arrays unless the array value is an object', () => {
     const testLog = [
@@ -61,10 +61,10 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       ]
     ];
     const data = loggerSanitizer(testLog);
-    expect(data[0]).toEqual('"happyValue"');
+    expect(data[0]).toEqual(testLog[0]);
     expect(data[1].password).toEqual(REDACTED);
     expect(data[2][0].password).toEqual(REDACTED);
-    expect(data[2][1]).toEqual('"happyValue2"');
+    expect(data[2][1]).toEqual(testLog[2][1]);
   });
   it('Should not redact a number, undefined, null, or boolean', () => {
     const testLog = {
@@ -74,15 +74,15 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       testBoolean: false
     };
     const data = loggerSanitizer(testLog);
-    expect(data.testNumber).toEqual('1234');
+    expect(data.testNumber).toEqual(testLog.testNumber);
     expect(data.testUndef).toBeUndefined();
-    expect(data.testNull).toEqual('null');
-    expect(data.testBoolean).toEqual('false');
+    expect(data.testNull).toEqual(testLog.testNull);
+    expect(data.testBoolean).toEqual(testLog.testBoolean);
   });
   it('Should return an Error Object\'s string representation and callstack', () => {
     const data = loggerSanitizer(new Error('I\'m innocuous and possibly helpful'));
-    expect(data).toContain('Error: I\'m innocuous and possibly helpful');
-    expect(data).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
+    expect(data.message).toContain('I\'m innocuous and possibly helpful');
+    expect(data.stack).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
   });
   it('Should return a custom Error Object\'s string representation and callstack', () => {
     class MyCustomError extends Error {
@@ -91,8 +91,8 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       }
     }
     const data = loggerSanitizer(new MyCustomError('I\'m innocuous and possibly helpful'));
-    expect(data).toContain('Error: I\'m innocuous and possibly helpful');
-    expect(data).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
+    expect(data.message).toContain('I\'m innocuous and possibly helpful');
+    expect(data.stack).toContain('logger-sanitizer/index.spec.js:'); // has callstack information
   });
   it('Should play nicely with other object types', () => {
     const someSet = new Set();
@@ -117,10 +117,10 @@ describe('Logger messages sanitizer redacts blacklisted passwords, tokens and ke
       e: customObjectWithToStringInstance,
     };
     const data = loggerSanitizer(testLog);
-    expect(data.a).toEqual('[object Set]');
-    expect(data.b).toEqual('[object Map]');
-    expect(data.c).toContain('2000-01-01');
-    expect(data.d).toEqual('{"foo":"bar"}');
-    expect(data.e).toEqual(REDACTED);
+    expect(data.a).toEqual(testLog.a);
+    expect(data.b).toEqual(testLog.b);
+    expect(data.c).toEqual(testLog.c)
+    expect(data.d).toEqual(testLog.d);
+    expect(data.e).toEqual({ password: REDACTED });
   });
 });
