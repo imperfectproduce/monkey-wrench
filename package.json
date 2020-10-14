@@ -25,7 +25,6 @@
   },
   "homepage": "https://github.com/imperfectproduce/monkey-wrench#readme",
   "dependencies": {
-    "algoliasearch": "^3.32.1",
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
     "bluebird": "^3.5.3",
