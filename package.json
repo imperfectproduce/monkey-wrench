@@ -1,6 +1,6 @@
 {
   "name": "@imperfectproduce/monkey-wrench",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "A collection of shared JavaScript for our node microservices, admin tooling, and the website.",
   "main": "index.js",
   "babel": {
