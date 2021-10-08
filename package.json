@@ -39,7 +39,7 @@
     "snappy": "^6.3.4"
   },
   "devDependencies": {
-    "expect": "^24.9.0",
+    "expect": "^27.2.5",
     "mocha": "^5.0.5"
   }
 }
