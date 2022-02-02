@@ -27,16 +27,11 @@
   "dependencies": {
     "babel-preset-env": "^1.6.1",
     "babel-register": "^6.26.0",
-    "bluebird": "^3.5.3",
-    "isomorphic-fetch": "^2.2.1",
     "lodash": "^4.17.21",
     "moment": "^2.22.1",
     "moment-timezone": "^0.5.16",
-    "react": "16.2.0",
     "react-redux": "^5.0.7",
-    "redis": "^3.0.2",
-    "redux": "^3.7.2",
-    "snappy": "^6.3.4"
+    "redux": "^3.7.2"
   },
   "devDependencies": {
     "expect": "^27.2.5",
